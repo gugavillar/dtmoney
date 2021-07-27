@@ -1,6 +1,6 @@
 # dt.money
 
-![Imagem inicial da aplicação](https://github.com/gugavillar/dtmoney/blob/main/assets/inicio.png)
+![Imagem inicial da aplicação](/assets/inicio.png)
 
 ## Tecnologias
 
