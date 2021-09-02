@@ -3,6 +3,7 @@ import outcomeImg from '../../assets/outcome.svg';
 import totalImg from '../../assets/total.svg';
 import { useTransaction } from '../../hooks/useTransactions';
 import { Container } from './styles';
+import { format } from '../../utils/format';
 
 export function Summery() {
     const { transactions } = useTransaction();
@@ -20,6 +21,9 @@ export function Summery() {
         withdraw: 0,
         total: 0
     });
+    const depositFormat = format.format(summary.deposit);
+    const withdrawFormat = format.format(summary.withdraw);
+    const totalFormat = format.format(summary.total);
     return (
         <Container>
             <div>
@@ -28,8 +32,7 @@ export function Summery() {
                     <img src={incomeImg} alt="Entradas" />
                 </header>
                 <strong>
-                    {new Intl.NumberFormat('pt-BR',
-                        { style: 'currency', currency: 'BRL' }).format(summary.deposit)}
+                    {depositFormat}
                 </strong>
             </div>
             <div>
@@ -38,8 +41,7 @@ export function Summery() {
                     <img src={outcomeImg} alt="Saídas" />
                 </header>
                 <strong>
-                    {new Intl.NumberFormat('pt-BR',
-                        { style: 'currency', currency: 'BRL' }).format(summary.withdraw)}
+                    {withdrawFormat}
                 </strong>
             </div>
             <div className="highlight-background">
@@ -48,8 +50,7 @@ export function Summery() {
                     <img src={totalImg} alt="Total" />
                 </header>
                 <strong>
-                    {new Intl.NumberFormat('pt-BR',
-                        { style: 'currency', currency: 'BRL' }).format(summary.total)}
+                    {totalFormat}
                 </strong>
             </div>
         </Container>
