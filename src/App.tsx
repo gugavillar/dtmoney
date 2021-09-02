@@ -4,6 +4,7 @@ import { NewTransactionsModal } from './components/NewTransactionsModal';
 import { GlobalStyles } from './styles/global';
 import { useState } from 'react';
 import { TransactionsProvider } from './hooks/useTransactions';
+import { AuthProvider } from './context/AuthContext';
 
 export function App() {
   const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
@@ -16,11 +17,13 @@ export function App() {
     setIsNewTransactionModalOpen(false);
   }
   return (
-    <TransactionsProvider>
-      <Header onOpenNewTransactionModal={handleOpenNewTransactionModal} />
-      <Dashboard />
-      <NewTransactionsModal isOpen={isNewTransactionModalOpen} onRequestClose={handleCloseNewTransactionModal} />
-      <GlobalStyles />
-    </TransactionsProvider>
+    <AuthProvider>
+      <TransactionsProvider>
+        <Header onOpenNewTransactionModal={handleOpenNewTransactionModal} />
+        <Dashboard />
+        <NewTransactionsModal isOpen={isNewTransactionModalOpen} onRequestClose={handleCloseNewTransactionModal} />
+        <GlobalStyles />
+      </TransactionsProvider>
+    </AuthProvider>
   );
 }

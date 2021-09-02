@@ -1,9 +1,10 @@
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
-import { api } from '../services/api';
 import { format } from '../utils/format';
+import { database } from '../services/firebase';
+import { AuthContext } from '../context/AuthContext';
 
 interface Transactions {
-    id: number;
+    id: string;
     title: string;
     amount: number;
     category: string;
@@ -12,6 +13,15 @@ interface Transactions {
     amountFormat: string;
     createdAtFormat: string;
 }
+
+type TransactionsFirebase = Record<string, {
+    id: string;
+    title: string;
+    amount: number;
+    category: string;
+    type: string;
+    createdAt: string;
+}>
 
 type TransactionInput = Omit<Transactions, 'id' | 'createdAt' | 'amountFormat' | 'createdAtFormat'>;
 
@@ -28,31 +38,37 @@ const TransactionsContext = createContext<TransactionsContextData>({} as Transac
 
 export function TransactionsProvider({ children }: TransactionsProviderProps) {
     const [transactions, setTransactions] = useState<Transactions[]>([]);
+    const { user } = useContext(AuthContext);
     useEffect(() => {
-        api.get('/transactions').then(response => {
-            const transactionsFormat = response.data?.transactions.map((transaction: Transactions) => {
+        const transactionsRef = database.ref(`transactions/${user?.id}`);
+        transactionsRef.on('value', transaction => {
+            const transactionsFirebase: TransactionsFirebase = transaction.val() || {};
+            const transactionsFormatted = Object.entries(transactionsFirebase).map(([key, value]) => {
                 return {
-                    id: transaction.id,
-                    title: transaction.title,
-                    amount: transaction.amount,
-                    category: transaction.category,
-                    type: transaction.type,
-                    createdAt: transaction.createdAt,
-                    amountFormat: format.format(transaction.amount),
-                    createdAtFormat: new Intl.DateTimeFormat('pt-br').format(new Date(transaction.createdAt))
+                    id: key,
+                    title: value.title,
+                    amount: value.amount,
+                    category: value.category,
+                    type: value.type,
+                    createdAt: value.createdAt,
+                    amountFormat: format.format(value.amount),
+                    createdAtFormat: new Date(value.createdAt).toLocaleDateString('pt-BR')
                 }
             });
-            setTransactions(transactionsFormat);
+            setTransactions(transactionsFormatted);
+
+            return () => {
+                transactionsRef.off('value');
+            }
         });
-    }, []);
+    }, [user?.id]);
 
     async function createTransaction(transactionInput: TransactionInput) {
-        const response = await api.post('/transactions', {
+        const transaction = {
             ...transactionInput,
-            createdAt: new Date()
-        });
-        const { transaction } = response.data;
-        setTransactions([...transactions, transaction]);
+            createdAt: new Date().getTime()
+        };
+        await database.ref(`/transactions/${user?.id}`).push(transaction);
     }
 
     return (
